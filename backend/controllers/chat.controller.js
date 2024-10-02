@@ -11,7 +11,7 @@ export const createChat = async (req, res) => {
             history: [
                 {
                     role: "user",
-                    contents: [{ text },],
+                    parts: [{ text },],
                     img
                 }
             ]
@@ -65,8 +65,8 @@ export const addChat = async (req, res) => {
         const { question, answer, img } = req.body;
         const { _id } = req.params;
         const newItem = [
-            ...(question ? [{ role: "user", contents: [{ text: question }], ...(img && { img }) }] : []),
-            { role: "assistant", contents: [{ text: answer }] }
+            ...(question ? [{ role: "user", parts: [{ text: question }], ...(img && { img }) }] : []),
+            { role: "model", parts: [{ text: answer }] }
         ];
 
         const updateChat = await Chat.updateOne({ _id, userClerkId: userId }, {
