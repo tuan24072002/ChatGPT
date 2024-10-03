@@ -5,6 +5,7 @@ export const Context = createContext();
 
 export const ContextProvider = (props) => {
     const [openSidebar, setOpenSidebar] = useState(true)
+    const [imagePreview, setImagePreview] = useState("")
     const [chatList, setChatList] = useState([])
     const fetchDataChatList = useCallback(async () => {
         const res = await getAllUserChat()
@@ -14,7 +15,9 @@ export const ContextProvider = (props) => {
         openSidebar,
         setOpenSidebar,
         chatList,
-        fetchDataChatList
+        fetchDataChatList,
+        imagePreview,
+        setImagePreview
     }
     return (
         <Context.Provider value={contextValue}>

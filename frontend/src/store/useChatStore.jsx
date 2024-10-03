@@ -9,7 +9,7 @@ const useChatStore = create((set, get) => ({
     setQuestion: (question) => set({ question }),
     dataChat: {},
     setDataChat: (data) => set({ dataChat: data }),
-    img: { isLoading: false, error: "", dbData: {}, aiData: {} },
+    img: { isLoading: false, data: "", aiData: {}, fileName: "" },
     setImg: (newImg) => set((state) => ({ img: { ...state.img, ...newImg } })),
     isLoading: false,
 
@@ -49,9 +49,9 @@ const useChatStore = create((set, get) => ({
                 get().dataChat?._id,
                 get().question || undefined,
                 get().answer,
-                get().img.dbData.filePath || undefined
+                get().img.data || undefined
             )
-            set({ question: "", answer: "", img: { isLoading: false, error: "", dbData: {}, aiData: {} } })
+            set({ question: "", answer: "", img: { isLoading: false, data: "", aiData: {}, fileName: "" } })
         } catch (error) {
             console.log("Error during adding chat", error.message);
         } finally {

@@ -1,4 +1,4 @@
-import { text } from "express";
+import cloudinary from "../lib/cloudinary.js";
 import Chat from "../models/chat.js";
 import User from "../models/user.js";
 
@@ -6,13 +6,18 @@ export const createChat = async (req, res) => {
     const userId = req.auth.userId;
     const { text, img } = req.body;
     try {
+        let cloudinaryResponse = null;
+        if (img) {
+            cloudinaryResponse = await cloudinary.uploader.upload(img, { folder: "chatgpt" })
+        }
+
         const newChat = new Chat({
             userClerkId: userId,
             history: [
                 {
                     role: "user",
                     parts: [{ text },],
-                    img
+                    img: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : ""
                 }
             ]
         })
@@ -60,12 +65,16 @@ export const getChatById = async (req, res) => {
 }
 
 export const addChat = async (req, res) => {
+    const userId = req.auth.userId;
+    const { question, answer, img } = req.body;
+    const { _id } = req.params;
     try {
-        const userId = req.auth.userId;
-        const { question, answer, img } = req.body;
-        const { _id } = req.params;
+        let cloudinaryResponse = null;
+        if (img) {
+            cloudinaryResponse = await cloudinary.uploader.upload(img, { folder: "chatgpt" })
+        }
         const newItem = [
-            ...(question ? [{ role: "user", parts: [{ text: question }], ...(img && { img }) }] : []),
+            ...(question ? [{ role: "user", parts: [{ text: question }], ...(img && { img: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "" }) }] : []),
             { role: "model", parts: [{ text: answer }] }
         ];
 

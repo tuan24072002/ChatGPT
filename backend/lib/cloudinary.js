@@ -9,19 +9,3 @@ cloudinary.config({
 });
 
 export default cloudinary;
-//Create
-// let cloudinaryResponse = null;
-// if (image) {
-//     cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" })
-// }
-
-//Delete
-// if (product.image) {
-//     const publicId = product.image.split("/").pop().split(".")[0];
-//     try {
-//         await cloudinary.uploader.destroy(`products/${publicId}`)
-//     } catch (error) {
-//         console.log("Error in deleting image from cloudinary", error.message);
-//         res.status(500).json({ message: "Server error", error: error.message })
-//     }
-// }

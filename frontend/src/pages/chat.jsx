@@ -9,6 +9,7 @@ import MarkdownChat from "../components/MarkdownChat";
 import useChatStore from "../store/useChatStore";
 import { getChatById } from "../services/apiServices";
 import { useUser } from "@clerk/clerk-react"
+import { Image as ImgLightBox } from "lightbox.js-react"
 
 const Chat = () => {
     const { setDataChat, dataChat, answer, question, img } = useChatStore();
@@ -25,22 +26,7 @@ const Chat = () => {
     useEffect(() => {
         endRef?.current.scrollIntoView({ behavior: "smooth" })
     }, [dataChat, answer, question, img.dbData])
-    // const hasRun = useRef(false)
-    // useEffect(() => {
-    //     if (!hasRun.current) {
-    //         if (dataChat?.history?.length === 1) {
-    //             addChat(dataChat.history[0].parts[0].text, true)
-    //         }
-    //     }
-    //     hasRun.current = true
-    // }, [addChat, dataChat])
-    {/* {
- message.img && <img
-     src={import.meta.env.VITE_IMAGE_KIT_ENDPOINT + message.img}
-      alt=""
-     width={400}
-     height={300} />
-  } */}
+
     return (
         <div className="flex-1 w-full h-full flex flex-col items-center">
             <div className="w-[90%] lg:w-[70%] h-full container mx-auto">
@@ -50,15 +36,25 @@ const Chat = () => {
                             dataChat && dataChat?.history?.length > 0 && dataChat?.history?.map((message, index) => {
                                 return (
                                     <React.Fragment key={index}>
+
                                         {
                                             message.role === "user"
                                                 ? <div className={`flex justify-end mb-4 animate-fadeIn`}>
                                                     <div className={`flex items-start max-w-[80%] flex-row-reverse`}>
                                                         <Avatar className="w-8 h-8">
-                                                            <AvatarFallback><img src={user?.imageUrl} alt="Avatar" /></AvatarFallback>
+                                                            <AvatarFallback>
+                                                                {
+                                                                    user ? <img src={user?.imageUrl} alt="Avatar" /> : <User />
+                                                                }
+                                                            </AvatarFallback>
                                                         </Avatar>
                                                         <Card className={`mx-2 w-[70%] bg-blue-500 text-white`}>
-                                                            <CardContent className="p-3">
+                                                            <CardContent className="p-3 flex flex-col gap-4">
+                                                                {
+                                                                    message.img &&
+                                                                    <ImgLightBox className='rounded-lgw-[300px] h-[200px]' image={{ src: message.img, title: message.img }} />
+
+                                                                }
                                                                 <MarkdownChat content={message.parts[0].text} />
                                                             </CardContent>
                                                         </Card>
@@ -86,10 +82,16 @@ const Chat = () => {
                             <div className={`flex justify-end mb-4 animate-fadeIn`}>
                                 <div className={`flex items-start max-w-[80%] flex-row-reverse`}>
                                     <Avatar className="w-8 h-8">
-                                        <AvatarFallback><User /></AvatarFallback>
+                                        {
+                                            user ? <img src={user?.imageUrl} alt="Avatar" /> : <User />
+                                        }
                                     </Avatar>
                                     <Card className={`mx-2 w-[70%] bg-blue-500 text-white`}>
-                                        <CardContent className="p-3">
+                                        <CardContent className="p-3 flex flex-col gap-4">
+                                            {
+                                                img.data &&
+                                                <ImgLightBox className='w-[300px] h-[200px] rounded-lg' image={{ src: img.data, title: img.fileName }} />
+                                            }
                                             <MarkdownChat content={question} />
                                         </CardContent>
                                     </Card>
@@ -110,8 +112,7 @@ const Chat = () => {
                                 </div>
                             </div>
                         }
-
-                        <div className="pb-24" ref={endRef} />
+                        <div className={img.data ? "pb-40" : "pb-24"} ref={endRef} />
                     </ScrollArea>
                 </div>
             </div>
