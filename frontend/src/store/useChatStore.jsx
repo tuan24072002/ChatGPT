@@ -11,8 +11,10 @@ const useChatStore = create((set, get) => ({
     setDataChat: (data) => set({ dataChat: data }),
     img: { isLoading: false, data: "", aiData: {}, fileName: "" },
     setImg: (newImg) => set((state) => ({ img: { ...state.img, ...newImg } })),
+    file: { data: null, aiData: {}, fileName: "" },
+    setFile: (newFile) => set((state) => ({ file: { ...state.file, ...newFile } })),
     isLoading: false,
-
+    isChatting: false,
     chat: model.startChat({
         history: [
             {
@@ -36,9 +38,17 @@ const useChatStore = create((set, get) => ({
         set({ isLoading: true })
         if (!isInitial) set({ question: text })
         try {
+            set({ isChatting: true })
+            const imgData = get().img?.aiData;
+            const fileData = get().file?.aiData;
             const result = await get().chat.sendMessageStream(
-                Object.entries(get().img.aiData).length ? [get().img.aiData, text] : [text]
-            )
+                (imgData && Object.entries(imgData).length)
+                    ? [text, imgData]
+                    : (fileData && Object.entries(fileData).length)
+                        ? [text, fileData]
+                        : [text]
+            );
+
             let textHistory = "";
             for await (const chunk of result.stream) {
                 const chunkText = chunk.text();
@@ -47,13 +57,29 @@ const useChatStore = create((set, get) => ({
             }
             await addChatDB(
                 get().dataChat?._id,
-                get().question || undefined,
+                isInitial ? "" : text,
                 get().answer,
-                get().img.data || undefined
+                get().img.data,
+                get().file.data
             )
-            set({ question: "", answer: "", img: { isLoading: false, data: "", aiData: {}, fileName: "" } })
+
+            set({
+                question: "",
+                answer: "",
+                img: {
+                    isLoading: false,
+                    data: "",
+                    aiData: {},
+                    fileName: ""
+                },
+                file: {
+                    data: null,
+                    fileName: ""
+                }
+            })
+            set({ isChatting: false })
         } catch (error) {
-            console.log("Error during adding chat", error.message);
+            console.log("Error during adding chat:", error.message);
         } finally {
             set({ isLoading: false })
         }

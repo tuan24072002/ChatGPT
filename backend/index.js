@@ -16,9 +16,10 @@ app.use(cors({
     credentials: true
 }));
 app.use(cookieParser());
+const __dirname = path.resolve();
+app.use("/backend/uploads/files", express.static(`${__dirname}/backend/uploads/files`))
 app.use("/api/user", userRoute);
 app.use("/api/chat", chatRoute);
-const __dirname = path.resolve();
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '/frontend/dist')));
     app.get('*', (req, res) => {

@@ -1,23 +1,34 @@
 import cloudinary from "../lib/cloudinary.js";
 import Chat from "../models/chat.js";
 import User from "../models/user.js";
+import { mkdirSync, renameSync } from 'fs';
 
 export const createChat = async (req, res) => {
     const userId = req.auth.userId;
     const { text, img } = req.body;
+    const { file } = req;
+
     try {
         let cloudinaryResponse = null;
         if (img) {
             cloudinaryResponse = await cloudinary.uploader.upload(img, { folder: "chatgpt" })
         }
-
+        let fileName = "";
+        if (file) {
+            const date = Date.now()
+            let fileDir = `./backend/uploads/files/${date}`
+            fileName = `${fileDir}/${file.originalname}`;
+            mkdirSync(fileDir, { recursive: true })
+            renameSync(file.path, fileName)
+        }
         const newChat = new Chat({
             userClerkId: userId,
             history: [
                 {
                     role: "user",
                     parts: [{ text },],
-                    img: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : ""
+                    img: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "",
+                    file: file ? fileName : ""
                 }
             ]
         })
@@ -29,7 +40,7 @@ export const createChat = async (req, res) => {
                 userClerkId: userId,
                 chatList: [
                     {
-                        chatId: saveChat._id,
+                        _id: saveChat._id,
                         title: text.substring(0, 40)
                     }
                 ]
@@ -39,7 +50,7 @@ export const createChat = async (req, res) => {
             await User.updateOne({ userClerkId: userId }, {
                 $push: {
                     chatList: {
-                        chatId: saveChat._id,
+                        _id: saveChat._id,
                         title: text.substring(0, 40)
                     }
                 }
@@ -47,8 +58,49 @@ export const createChat = async (req, res) => {
         }
         res.status(200).send(saveChat._id);
     } catch (error) {
-        console.log(error);
+        console.log(`Error creating chat: `, error.message);
         res.status(500).send(`Error creating chat !`)
+    }
+}
+
+export const addChat = async (req, res) => {
+    const userId = req.auth.userId;
+    const { question, answer, img } = req.body;
+    const { file } = req;
+    const { _id } = req.params;
+    if (!_id || !answer) {
+        return res.status(400).send("Missing required parameters");
+    }
+    try {
+        let cloudinaryResponse = null;
+        if (img) {
+            cloudinaryResponse = await cloudinary.uploader.upload(img, { folder: "chatgpt" })
+        }
+        let fileName = "";
+        if (file) {
+            const date = Date.now()
+            let fileDir = `./backend/uploads/files/${date}`
+            fileName = `${fileDir}/${file.originalname}`;
+            mkdirSync(fileDir, { recursive: true })
+            renameSync(file.path, fileName)
+        }
+        const newItem = [
+            ...(question ? [{ role: "user", parts: [{ text: question }], ...(img && { img: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "" }), ...(file && { file: fileName }) }] : []),
+            { role: "model", parts: [{ text: answer }] }
+        ];
+
+        const updateChat = await Chat.updateOne({ _id, userClerkId: userId }, {
+            $push: {
+                history: {
+                    $each: newItem
+                }
+            }
+        });
+        const getChat = await Chat.findById(_id)
+        res.status(200).send({ chat: getChat });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(`Error adding chat !`)
     }
 }
 
@@ -61,33 +113,5 @@ export const getChatById = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).send(`Error fetching chat by id !`)
-    }
-}
-
-export const addChat = async (req, res) => {
-    const userId = req.auth.userId;
-    const { question, answer, img } = req.body;
-    const { _id } = req.params;
-    try {
-        let cloudinaryResponse = null;
-        if (img) {
-            cloudinaryResponse = await cloudinary.uploader.upload(img, { folder: "chatgpt" })
-        }
-        const newItem = [
-            ...(question ? [{ role: "user", parts: [{ text: question }], ...(img && { img: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "" }) }] : []),
-            { role: "model", parts: [{ text: answer }] }
-        ];
-
-        const updateChat = await Chat.updateOne({ _id, userClerkId: userId }, {
-            $push: {
-                history: {
-                    $each: newItem
-                }
-            }
-        });
-        res.status(200).send(updateChat);
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(`Error adding chat !`)
     }
 }

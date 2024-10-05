@@ -1,6 +1,6 @@
 import MobileSidebar from "@/components/MobileSidebar"
 import DesktopSidebar from "@/components/DesktopSidebar"
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom"
+import { Route, Routes, useNavigate } from "react-router-dom"
 import Home from "./pages/home"
 import { useAppContext } from "./context/UseContextCustom"
 import { Loader, LogIn, Sidebar } from "lucide-react"
@@ -16,9 +16,9 @@ function App() {
   return (
     <>
       <div className="h-screen w-full flex items-start bg-slate-100 relative">
-        <div className="absolute right-4 top-4 flex items-center gap-4">
+        <div className="absolute right-4 top-4 items-center gap-4 hidden md:flex">
           <SignedIn>
-            <Sidebar size={24} className={`cursor-pointer hidden md:block z-10`} onClick={() => setOpenSidebar(prev => !prev)} />
+            <Sidebar size={24} className={`cursor-pointer z-10`} onClick={() => setOpenSidebar(prev => !prev)} />
           </SignedIn>
           <ClerkLoading>
             <Loader size={'2em'} className='spin' />
@@ -33,7 +33,6 @@ function App() {
           </SignedIn>
           <SignedOut>
             <LogIn onClick={() => navigate("/sign-in")} className='cursor-pointer z-10' />
-            <Navigate to="/sign-in" replace />
           </SignedOut>
         </div>
         <div className={`h-full w-full flex`}>

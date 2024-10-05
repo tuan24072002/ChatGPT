@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     },
     chatList: [
         {
-            chatId: {
+            _id: {
                 type: mongoose.Types.ObjectId,
                 required: ["true", "chatId is required"]
             },

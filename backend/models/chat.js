@@ -16,11 +16,17 @@ const chatSchema = new mongoose.Schema({
                 {
                     text: {
                         type: String,
-                        required: ["true", "Text is required"]
+                        required: function () {
+                            return this.role === "model" ? ["true", "Text is required"] : false
+                        }
                     }
                 }
             ],
             img: {
+                type: String,
+                required: false
+            },
+            file: {
                 type: String,
                 required: false
             }

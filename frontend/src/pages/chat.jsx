@@ -1,18 +1,18 @@
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import React, { useCallback, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Bot, User } from "lucide-react";
+import { Bot, Download, Folder, User } from "lucide-react";
 import FormChat from "../components/FormChat";
 import MarkdownChat from "../components/MarkdownChat";
 import useChatStore from "../store/useChatStore";
-import { getChatById } from "../services/apiServices";
+import { downloadFile, getChatById } from "../services/apiServices";
 import { useUser } from "@clerk/clerk-react"
 import { Image as ImgLightBox } from "lightbox.js-react"
 
 const Chat = () => {
-    const { setDataChat, dataChat, answer, question, img } = useChatStore();
+    const { setDataChat, dataChat, answer, question, img, isChatting } = useChatStore();
     const endRef = useRef(null);
     const { user } = useUser();
     const { chatId } = useParams();
@@ -21,11 +21,24 @@ const Chat = () => {
         setDataChat(res.data)
     }, [chatId, setDataChat])
     useEffect(() => {
-        getChat();
-    }, [getChat])
+        if (!isChatting) {
+            getChat();
+        }
+    }, [getChat, isChatting])
     useEffect(() => {
         endRef?.current.scrollIntoView({ behavior: "smooth" })
     }, [dataChat, answer, question, img.dbData])
+    const handleDownloadFile = async (fileUrl) => {
+        const res = await downloadFile(fileUrl)
+        const urlBlob = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a')
+        link.href = urlBlob
+        link.setAttribute("download", fileUrl.split('/').pop())
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(urlBlob)
+    }
 
     return (
         <div className="flex-1 w-full h-full flex flex-col items-center">
@@ -36,7 +49,6 @@ const Chat = () => {
                             dataChat && dataChat?.history?.length > 0 && dataChat?.history?.map((message, index) => {
                                 return (
                                     <React.Fragment key={index}>
-
                                         {
                                             message.role === "user"
                                                 ? <div className={`flex justify-end mb-4 animate-fadeIn`}>
@@ -53,6 +65,23 @@ const Chat = () => {
                                                                 {
                                                                     message.img &&
                                                                     <ImgLightBox className='rounded-lgw-[300px] h-[200px]' image={{ src: message.img, title: message.img }} />
+                                                                }
+                                                                {
+                                                                    message.file &&
+                                                                    <Link target="_blank" to={`http://localhost:1234${String(message.file).replace(".", "")}`} className='flex justify-center gap-8 p-2 cursor-pointer group'>
+                                                                        <div className="relative">
+                                                                            <span className="opacity-100 group-hover:opacity-0 cursor-pointer transition-all duration-300 absolute left-0 top-0">
+                                                                                <Folder className="size-6" />
+                                                                            </span>
+                                                                            <span
+                                                                                className='opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300 absolute left-0 top-0'
+                                                                                onClick={() => handleDownloadFile(`http://localhost:1234${String(message.file).replace(".", "")}`)}
+                                                                            >
+                                                                                <Download className="size-6" />
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="text-sm truncate w-32">{message.file.split("/").pop()}</div>
+                                                                    </Link>
 
                                                                 }
                                                                 <MarkdownChat content={message.parts[0].text} />
@@ -117,7 +146,7 @@ const Chat = () => {
                 </div>
             </div>
             <FormChat getChat={getChat} />
-        </div>
+        </div >
     )
 }
 
