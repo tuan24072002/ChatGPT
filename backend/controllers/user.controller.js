@@ -12,6 +12,8 @@ export const getAllUserChat = async (req, res) => {
         ]);
         if (users.length > 0) {
             res.status(200).send(users[0].chatList);
+        } else {
+            res.status(200).send("User not found")
         }
     } catch (error) {
         console.log(error.message);
