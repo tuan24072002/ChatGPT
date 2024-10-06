@@ -56,7 +56,7 @@ const MobileSidebar = () => {
                                     size: "large",
                                 }} />
                                 <p className="text-sm font-semibold">
-                                    {user.fullName || user.firstName || user.username}
+                                    {user?.fullName || user?.firstName || user?.username}
                                 </p>
                             </div>
                         </SignedIn>

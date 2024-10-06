@@ -17,7 +17,7 @@ app.use(cors({
 }));
 app.use(cookieParser());
 const __dirname = path.resolve();
-app.use("/backend/uploads/files", express.static(`${__dirname}/backend/uploads/files`))
+app.use(`/backend/uploads/files`, express.static(`${__dirname}/backend/uploads/files`))
 app.use("/api/user", userRoute);
 app.use("/api/chat", chatRoute);
 if (process.env.NODE_ENV === 'production') {
