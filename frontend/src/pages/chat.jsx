@@ -68,14 +68,14 @@ const Chat = () => {
                                                                 }
                                                                 {
                                                                     message.file &&
-                                                                    <Link target="_blank" to={`http://localhost:1234${String(message.file).replace(".", "")}`} className='flex justify-center gap-8 p-2 cursor-pointer group'>
+                                                                    <Link target="_blank" to={import.meta.env.MODE === "development" ? `http://localhost:1234${String(message.file).replace(".", "")}` : String(message.file).replace(".", "")} className='flex justify-center gap-8 p-2 cursor-pointer group'>
                                                                         <div className="relative">
                                                                             <span className="opacity-100 group-hover:opacity-0 cursor-pointer transition-all duration-300 absolute left-0 top-0">
                                                                                 <Folder className="size-6" />
                                                                             </span>
                                                                             <span
                                                                                 className='opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300 absolute left-0 top-0'
-                                                                                onClick={() => handleDownloadFile(`http://localhost:1234${String(message.file).replace(".", "")}`)}
+                                                                                onClick={() => handleDownloadFile(import.meta.env.MODE === "development" ? `http://localhost:1234${String(message.file).replace(".", "")}` : String(message.file).replace(".", ""))}
                                                                             >
                                                                                 <Download className="size-6" />
                                                                             </span>
